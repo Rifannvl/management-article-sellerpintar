@@ -1,13 +1,10 @@
-import Image from "next/image";
-import Register from "../components/FormRegister";
+import React from "react";
+import Article from "./articles/page";
 
-export default function Home() {
+export default function page() {
   return (
     <div>
-      <h1 className="text-3xl font-bold underline text-blue-500">
-        Halaman Artikel - Manajemen Artikel
-      </h1>
-      <Register />
+      <Article />
     </div>
   );
 }
