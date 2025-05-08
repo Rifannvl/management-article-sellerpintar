@@ -1,99 +1,140 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Search, Edit } from "lucide-react";
 import Cookies from "js-cookie";
-import { Search, Edit } from "lucide-react"; // Import Lucide icons
+import { useRouter } from "next/navigation";
 
-const CategoriesManagement = ({
-  fetchCategories,
-  categories,
-  setCategories,
-}) => {
+const CategoriesManagement = () => {
+  const router = useRouter();
+  const [categories, setCategories] = useState([]);
   const [newCategory, setNewCategory] = useState("");
   const [editingCategory, setEditingCategory] = useState(null);
   const [editedCategoryName, setEditedCategoryName] = useState("");
-  const [searchTerm, setSearchTerm] = useState(""); // State for search term
+  const [searchTerm, setSearchTerm] = useState("");
+  const [visibleCount, setVisibleCount] = useState(10);
+  const [error, setError] = useState("");
 
-  // Filtered categories based on search term
-  const filteredCategories = categories.filter((category) =>
-    category.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(
+        "https://test-fe.mysellerpintar.com/api/categories?page=1&limit=100"
+      );
+      const result = await res.json();
 
+      if (Array.isArray(result.data)) {
+        const validData = result.data.filter((cat) => cat?.id && cat?.name);
+        setCategories(validData);
+        localStorage.setItem("categories", JSON.stringify(validData));
+      } else {
+        console.error("Format data tidak sesuai:", result);
+      }
+    } catch (error) {
+      console.error("Gagal memuat kategori:", error);
+    }
+  };
+
+  useEffect(() => {
+    const saved = localStorage.getItem("categories");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setCategories(parsed);
+      } catch (err) {
+        console.error("Gagal parse localStorage:", err);
+      }
+    }
+    fetchCategories();
+  }, []);
+
+  // Add category handler with token from cookies or localStorage
   const handleAddCategory = async () => {
-    if (!newCategory.trim()) return alert("Nama kategori tidak boleh kosong");
-
-    const token = Cookies.get("token") || localStorage.getItem("token");
-    if (!token) return alert("Anda harus login terlebih dahulu.");
+    if (!newCategory.trim()) {
+      setError("Nama kategori tidak boleh kosong.");
+      return;
+    }
 
     try {
+      const token = localStorage.getItem("token") || Cookies.get("token");
+      if (!token) {
+        setError("Token tidak ditemukan, silakan login.");
+        router.push("/auth/login");
+        return;
+      }
+
       const res = await fetch(
         "https://test-fe.mysellerpintar.com/api/categories",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            accept: "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ name: newCategory }),
         }
       );
 
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error("Error Response:", errorText);
+        throw new Error("Gagal menambahkan kategori");
+      }
+
       const data = await res.json();
 
-      if (res.ok && data?.id && data?.name) {
+      if (data?.id && data?.name) {
         alert("Kategori berhasil ditambahkan!");
         setCategories((prev) => [...prev, data]);
-        setNewCategory("");
+        setNewCategory(""); // Clear input field
       } else {
         alert("Gagal menambahkan kategori.");
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error saat menambah kategori:", error);
       alert("Gagal menambahkan kategori.");
     }
   };
 
   const handleEditCategory = (categoryId) => {
-    const found = categories.find((cat) => cat?.id === categoryId);
+    const found = categories.find((cat) => cat.id === categoryId);
     if (found) {
       setEditingCategory(found);
       setEditedCategoryName(found.name);
-    } else {
-      console.error("Kategori tidak ditemukan.");
     }
   };
 
   const handleUpdateCategory = async () => {
-    if (!editedCategoryName.trim())
-      return alert("Nama kategori tidak boleh kosong");
-
-    const token = Cookies.get("token") || localStorage.getItem("token");
-    if (!token) return alert("Anda harus login terlebih dahulu.");
+    if (!editedCategoryName.trim()) return alert("Nama tidak boleh kosong");
 
     try {
+      const token = localStorage.getItem("token") || Cookies.get("token");
+      if (!token) {
+        setError("Token tidak ditemukan, silakan login.");
+        router.push("/auth/login");
+        return;
+      }
+
       const res = await fetch(
         `https://test-fe.mysellerpintar.com/api/categories/${editingCategory.id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            accept: "application/json",
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ name: editedCategoryName }),
         }
       );
 
-      if (res.ok) {
+      if (res.status === 200) {
         alert("Kategori berhasil diperbarui!");
         setEditingCategory(null);
-        fetchCategories(); // Refresh list
+        fetchCategories();
       } else {
         alert("Gagal memperbarui kategori.");
       }
     } catch (error) {
-      console.error("Error updating:", error);
+      console.error("Update error:", error);
       alert("Gagal memperbarui kategori.");
     }
   };
@@ -103,10 +144,15 @@ const CategoriesManagement = ({
     setEditedCategoryName("");
   };
 
-  // Handle search term change
-  const handleSearchChange = (e) => {
-    setSearchTerm(e.target.value);
+  const handleLoadMore = () => {
+    setVisibleCount((prev) => prev + 10);
   };
+
+  const filteredCategories = categories.filter((category) =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const displayedCategories = filteredCategories.slice(0, visibleCount);
 
   return (
     <div className="w-full p-6 bg-white rounded-xl shadow-lg">
@@ -114,19 +160,19 @@ const CategoriesManagement = ({
         Manajemen Kategori
       </h1>
 
-      {/* Search input for categories */}
+      {error && <p className="text-red-600 font-semibold mb-2">{error}</p>}
+
       <div className="flex gap-4 mb-6 items-center p-4 rounded-lg shadow-sm border border-gray-300">
         <Search size={24} color="#4B5563" />
         <input
           type="text"
           placeholder="Cari kategori"
           value={searchTerm}
-          onChange={handleSearchChange}
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="px-4 py-2 border rounded-md w-1/3 outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
 
-      {/* Tambah kategori */}
       <div className="flex gap-4 mb-6">
         <input
           type="text"
@@ -143,7 +189,6 @@ const CategoriesManagement = ({
         </button>
       </div>
 
-      {/* Daftar kategori */}
       <div className="overflow-x-auto bg-white rounded-lg shadow-md">
         <table className="min-w-full table-auto">
           <thead className="bg-gray-200 text-gray-700 text-sm">
@@ -153,8 +198,8 @@ const CategoriesManagement = ({
             </tr>
           </thead>
           <tbody>
-            {filteredCategories.length > 0 ? (
-              filteredCategories.map((category) => (
+            {displayedCategories.length > 0 ? (
+              displayedCategories.map((category) => (
                 <tr key={category.id} className="border-b hover:bg-gray-50">
                   <td className="px-6 py-4">{category.name}</td>
                   <td className="px-6 py-4">
@@ -178,7 +223,17 @@ const CategoriesManagement = ({
         </table>
       </div>
 
-      {/* Edit kategori */}
+      {filteredCategories.length > visibleCount && (
+        <div className="mt-4 text-center">
+          <button
+            onClick={handleLoadMore}
+            className="text-indigo-600 hover:underline"
+          >
+            Tampilkan Lebih Banyak
+          </button>
+        </div>
+      )}
+
       {editingCategory && (
         <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
           <h2 className="text-2xl font-semibold text-gray-900 mb-4">
