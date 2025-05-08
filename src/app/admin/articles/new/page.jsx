@@ -11,40 +11,39 @@ export default function CreateArticle() {
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const res = await fetch(
-          "https://test-fe.mysellerpintar.com/api/categories"
-        );
+  // Fetch categories from API
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(
+        "https://test-fe.mysellerpintar.com/api/categories?page=1&limit=100"
+      );
 
-        // Cek status respon
-        console.log("API response status:", res.status);
-        if (!res.ok) {
-          throw new Error(`HTTP error! Status: ${res.status}`);
-        }
-
-        const data = await res.json();
-        console.log("API response data:", data); // Log data untuk memeriksa struktur
-
-        // Pastikan data kategori berupa array dan sesuai dengan struktur
-        if (Array.isArray(data)) {
-          setCategories(data); // Gunakan data langsung jika array
-        } else if (Array.isArray(data.data)) {
-          setCategories(data.data); // Jika kategori ada di dalam data.data
-        } else {
-          console.warn("Data kategori tidak valid:", data);
-          setCategories([]); // Jika data tidak valid, set kosong
-        }
-      } catch (err) {
-        console.error("Gagal mengambil kategori:", err);
-        setCategories([]); // Set kategori kosong jika ada error
+      if (!res.ok) {
+        throw new Error(`HTTP error! Status: ${res.status}`);
       }
-    }
 
+      const data = await res.json();
+
+      if (Array.isArray(data)) {
+        setCategories(data);
+      } else if (Array.isArray(data.data)) {
+        setCategories(data.data);
+      } else {
+        console.warn("Data kategori tidak valid:", data);
+        setCategories([]);
+      }
+    } catch (err) {
+      console.error("Gagal mengambil kategori:", err);
+      setCategories([]);
+    }
+  };
+
+  // Initial fetch categories when the component loads
+  useEffect(() => {
     fetchCategories();
   }, []);
 
+  // Handle input changes
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError("");
@@ -58,6 +57,7 @@ export default function CreateArticle() {
     setPreview(form);
   };
 
+  // Handle form submission
   const handleSubmit = async () => {
     if (!form.title.trim() || !form.content.trim() || !form.categoryId) {
       setError("Semua field wajib diisi.");
