@@ -12,8 +12,11 @@ const CategoriesManagement = () => {
   const [editingCategory, setEditingCategory] = useState(null);
   const [editedCategoryName, setEditedCategoryName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
-  const [visibleCount, setVisibleCount] = useState(10);
   const [error, setError] = useState("");
+
+  // Pagination states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const fetchCategories = async () => {
     try {
@@ -47,7 +50,6 @@ const CategoriesManagement = () => {
     fetchCategories();
   }, []);
 
-  // Add category handler with token from cookies or localStorage
   const handleAddCategory = async () => {
     if (!newCategory.trim()) {
       setError("Nama kategori tidak boleh kosong.");
@@ -144,15 +146,23 @@ const CategoriesManagement = () => {
     setEditedCategoryName("");
   };
 
-  const handleLoadMore = () => {
-    setVisibleCount((prev) => prev + 10);
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
   };
 
   const filteredCategories = categories.filter((category) =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const displayedCategories = filteredCategories.slice(0, visibleCount);
+  // Pagination Logic: Calculate the categories to display for the current page
+  const indexOfLastCategory = currentPage * itemsPerPage;
+  const indexOfFirstCategory = indexOfLastCategory - itemsPerPage;
+  const currentCategories = filteredCategories.slice(
+    indexOfFirstCategory,
+    indexOfLastCategory
+  );
+
+  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage);
 
   return (
     <div className="w-full p-6 bg-white rounded-xl shadow-lg">
@@ -198,8 +208,8 @@ const CategoriesManagement = () => {
             </tr>
           </thead>
           <tbody>
-            {displayedCategories.length > 0 ? (
-              displayedCategories.map((category) => (
+            {currentCategories.length > 0 ? (
+              currentCategories.map((category) => (
                 <tr key={category.id} className="border-b hover:bg-gray-50">
                   <td className="px-6 py-4">{category.name}</td>
                   <td className="px-6 py-4">
@@ -223,16 +233,25 @@ const CategoriesManagement = () => {
         </table>
       </div>
 
-      {filteredCategories.length > visibleCount && (
-        <div className="mt-4 text-center">
-          <button
-            onClick={handleLoadMore}
-            className="text-indigo-600 hover:underline"
-          >
-            Tampilkan Lebih Banyak
-          </button>
-        </div>
-      )}
+      <div className="flex justify-center mt-6">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className="px-4 py-2 text-white bg-indigo-600 rounded-l-md hover:bg-indigo-700 disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <span className="px-4 py-2 text-gray-700">
+          {currentPage} of {totalPages}
+        </span>
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className="px-4 py-2 text-white bg-indigo-600 rounded-r-md hover:bg-indigo-700 disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
 
       {editingCategory && (
         <div className="mt-6 bg-white p-4 rounded-lg shadow-md">
