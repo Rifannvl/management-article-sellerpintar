@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogOut, Search, ChevronLeft } from "lucide-react"; // Import ikon Lucide
-import Swal from "sweetalert2"; // Import SweetAlert2
-import Cookies from "js-cookie"; // Pastikan js-cookie di-import
+import { LogOut, Search, ChevronLeft } from "lucide-react";
+import Swal from "sweetalert2";
+import Cookies from "js-cookie";
 
 export default function ArticleListPage() {
   const [articles, setArticles] = useState([]);
@@ -22,21 +22,17 @@ export default function ArticleListPage() {
 
   const limit = 9;
 
-  // Debounce search term (400ms)
   useEffect(() => {
     const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm); // Hanya update setelah pengguna berhenti mengetik
+      setDebouncedSearchTerm(searchTerm);
     }, 400);
-
-    // Bersihkan timeout jika pengguna mengetik lebih cepat dari 400ms
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Fetch categories on mount
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await api.get("/categories");
+        const res = await api.get("/categories?page=1&limit=100");
         setCategories(res.data.data || []);
       } catch (err) {
         console.error("Gagal fetch categories:", err);
@@ -45,7 +41,6 @@ export default function ArticleListPage() {
     fetchCategories();
   }, []);
 
-  // Fetch articles based on filters and pagination
   useEffect(() => {
     async function fetchArticles() {
       setLoading(true);
@@ -66,7 +61,7 @@ export default function ArticleListPage() {
         console.error("Gagal fetch articles:", err);
         if (err.response?.status === 401) {
           localStorage.removeItem("token");
-          Cookies.remove("token"); // Pastikan cookies dihapus
+          Cookies.remove("token");
           router.replace("/auth/login");
         }
       } finally {
@@ -77,24 +72,18 @@ export default function ArticleListPage() {
     fetchArticles();
   }, [page, selectedCategory]);
 
-  // Filter articles by search term
   useEffect(() => {
     if (debouncedSearchTerm === "") {
       setFilteredArticles(articles);
     } else {
-      const filtered = articles.filter(
-        (article) =>
-          article.title
-            .toLowerCase()
-            .includes(debouncedSearchTerm.toLowerCase()) // Filter berdasarkan title
+      const filtered = articles.filter((article) =>
+        article.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       );
       setFilteredArticles(filtered);
     }
   }, [debouncedSearchTerm, articles]);
 
-  // Handle Logout with SweetAlert2 confirmation
   const handleLogout = () => {
-    console.log("Logout initiated"); // Debugging log
     Swal.fire({
       title: "Anda yakin ingin logout?",
       text: "Data yang belum disimpan akan hilang.",
@@ -106,25 +95,25 @@ export default function ArticleListPage() {
       cancelButtonText: "Batal",
     }).then((result) => {
       if (result.isConfirmed) {
-        // Debugging log untuk melihat status logout
-        console.log("Logging out...");
-        localStorage.removeItem("token"); // Hapus token dari localStorage
-        Cookies.remove("token"); // Hapus token dari cookies
-
+        localStorage.removeItem("token");
+        Cookies.remove("token");
         Swal.fire("Logout Berhasil!", "Anda telah logout.", "success");
-
-        // Redirect ke halaman login
         router.replace("/auth/login");
       }
     });
   };
 
+  const SkeletonCard = () => (
+    <div className="animate-pulse border p-4 rounded-lg shadow-md">
+      <div className="h-6 bg-gray-300 rounded w-3/4 mb-4"></div>
+      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+    </div>
+  );
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Artikel</h1>
-
-        {/* Tombol Logout dengan ikon */}
         <button
           onClick={handleLogout}
           className="p-2 rounded-full bg-red-600 text-white hover:bg-red-700"
@@ -133,24 +122,24 @@ export default function ArticleListPage() {
         </button>
       </div>
 
-      {/* Input Pencarian dengan ikon */}
+      {/* Search Input */}
       <div className="mb-6 flex items-center">
         <Search className="text-gray-500 mr-3" size={20} />
         <input
           type="text"
           placeholder="Cari artikel berdasarkan judul..."
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)} // Update searchTerm saat pengguna mengetik
+          onChange={(e) => setSearchTerm(e.target.value)}
           className="p-2 border rounded-lg w-full focus:outline-none"
         />
       </div>
 
-      {/* Filter Kategori */}
+      {/* Category Filter */}
       <div className="mb-6">
         <select
           onChange={(e) => {
             setSelectedCategory(e.target.value);
-            setPage(1); // Reset ke halaman pertama saat filter berubah
+            setPage(1);
           }}
           value={selectedCategory}
           className="p-2 border rounded-lg w-full focus:outline-none"
@@ -164,9 +153,13 @@ export default function ArticleListPage() {
         </select>
       </div>
 
-      {/* Daftar Artikel */}
+      {/* Article List or Skeleton */}
       {loading ? (
-        <p className="text-center">Memuat...</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <SkeletonCard key={idx} />
+          ))}
+        </div>
       ) : filteredArticles.length === 0 ? (
         <p className="text-center">
           Tidak ada artikel yang sesuai dengan pencarian Anda.
