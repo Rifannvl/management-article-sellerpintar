@@ -104,67 +104,80 @@ export default function CreateArticle() {
   };
 
   return (
-    <div className="p-8 max-w-3xl mx-auto bg-white shadow rounded">
-      <h1 className="text-2xl font-bold mb-4">Buat Artikel</h1>
+    <div className="p-8 max-w-3xl mx-auto bg-white shadow-xl rounded-lg border border-gray-200">
+      <h1 className="text-3xl font-semibold mb-6 text-gray-800">
+        Buat Artikel
+      </h1>
 
-      {error && <p className="text-red-600 font-semibold mb-2">{error}</p>}
+      {error && (
+        <p className="text-red-600 font-semibold mb-4 text-sm">{error}</p>
+      )}
 
-      <input
-        name="title"
-        placeholder="Judul Artikel"
-        value={form.title}
-        onChange={handleChange}
-        className="w-full p-2 border rounded mb-4"
-      />
+      <div className="mb-6">
+        <input
+          name="title"
+          placeholder="Judul Artikel"
+          value={form.title}
+          onChange={handleChange}
+          className="w-full p-4 border rounded-lg bg-gray-50 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
-      <textarea
-        name="content"
-        placeholder="Isi Artikel"
-        rows={6}
-        value={form.content}
-        onChange={handleChange}
-        className="w-full p-2 border rounded mb-4"
-      />
+      <div className="mb-6">
+        <textarea
+          name="content"
+          placeholder="Isi Artikel"
+          rows={6}
+          value={form.content}
+          onChange={handleChange}
+          className="w-full p-4 border rounded-lg bg-gray-50 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
 
-      {/* Dropdown untuk kategori */}
-      <select
-        name="categoryId"
-        value={form.categoryId}
-        onChange={handleChange}
-        className="w-full p-2 border rounded mb-4"
-      >
-        <option value="">Pilih Kategori</option>
-        {categories.length > 0 ? (
-          categories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))
-        ) : (
-          <option value="">No categories available</option>
-        )}
-      </select>
+      <div className="mb-6">
+        <select
+          name="categoryId"
+          value={form.categoryId}
+          onChange={handleChange}
+          className="w-full p-4 border rounded-lg bg-gray-50 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Pilih Kategori</option>
+          {categories.length > 0 ? (
+            categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))
+          ) : (
+            <option value="">Tidak ada kategori tersedia</option>
+          )}
+        </select>
+      </div>
 
-      <div className="flex gap-3">
+      <div className="flex gap-4 mb-6">
         <button
           onClick={handlePreview}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="w-full px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
         >
           Preview
         </button>
         <button
           onClick={handleSubmit}
-          className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          className="w-full px-6 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-colors"
         >
           Submit
         </button>
       </div>
 
       {preview && (
-        <div className="mt-6 border-t pt-4">
-          <h2 className="text-xl font-semibold mb-2">Preview:</h2>
-          <h3 className="text-lg font-bold text-gray-800">{preview.title}</h3>
-          <p className="text-gray-700 whitespace-pre-line mt-2">
+        <div className="mt-8 border-t pt-6">
+          <h2 className="text-2xl font-semibold mb-4 text-gray-800">
+            Preview:
+          </h2>
+          <h3 className="text-xl font-semibold text-gray-900">
+            {preview.title}
+          </h3>
+          <p className="text-gray-700 whitespace-pre-line mt-4">
             {preview.content}
           </p>
         </div>
