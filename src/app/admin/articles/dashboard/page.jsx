@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import CategoriesManagement from "../../categories/page";
 import { api } from "@/lib/api";
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 // Skeleton loader component for table
 const SkeletonLoader = () => {
@@ -132,9 +133,20 @@ export default function Page() {
   }, [searchTerm, selectedCategory, allArticles]);
 
   const handleLogout = () => {
-    Cookies.remove("token");
-    localStorage.removeItem("token");
-    router.push("/auth/login");
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You will be logged out of your account.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, log out",
+      cancelButtonText: "No, stay logged in",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Cookies.remove("token");
+        localStorage.removeItem("token");
+        router.push("/auth/login");
+      }
+    });
   };
 
   const totalPages = Math.ceil(filteredArticles.length / itemsPerPage);
