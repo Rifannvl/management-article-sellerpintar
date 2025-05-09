@@ -8,7 +8,7 @@ export const api = axios.create({
   },
 });
 
-// Tambahkan interceptor untuk menyisipkan token Authorization
+// Interceptor untuk menyisipkan token Authorization dari localStorage
 api.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("token");
