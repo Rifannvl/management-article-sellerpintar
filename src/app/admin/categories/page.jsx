@@ -172,68 +172,63 @@ const CategoriesManagement = () => {
 
       {error && <p className="text-red-600 font-semibold mb-2">{error}</p>}
 
-      <div className="flex gap-4 mb-6 items-center p-4 rounded-lg shadow-sm border border-gray-300">
-        <Search size={24} color="#4B5563" />
-        <input
-          type="text"
-          placeholder="Cari kategori"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="px-4 py-2 border rounded-md w-1/3 outline-none focus:ring-2 focus:ring-indigo-500"
-        />
+      <div className="flex flex-col sm:flex-row gap-4 mb-6 items-center p-4 rounded-lg shadow-sm border border-gray-300">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <Search size={24} color="#4B5563" />
+          <input
+            type="text"
+            placeholder="Cari kategori"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="px-4 py-2 border rounded-md w-full sm:w-1/3 md:w-[750px] w-full outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
       </div>
 
-      <div className="flex gap-4 mb-6">
+      <div className="flex gap-4 mb-6 flex-wrap">
         <input
           type="text"
           placeholder="Nama kategori"
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
-          className="px-4 py-2 border rounded-md w-1/3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          className="px-4 py-2 border rounded-md w-full sm:w-1/3 focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <button
           onClick={handleAddCategory}
-          className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200"
+          className="px-6 py-3 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-200 mr-0"
         >
           Tambah Kategori
         </button>
       </div>
 
-      <div className="overflow-x-auto bg-white rounded-lg shadow-md">
-        <table className="min-w-full table-auto">
-          <thead className="bg-gray-200 text-gray-700 text-sm">
-            <tr>
-              <th className="px-6 py-4 text-left">Nama Kategori</th>
-              <th className="px-6 py-4 text-left">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {currentCategories.length > 0 ? (
-              currentCategories.map((category) => (
-                <tr key={category.id} className="border-b hover:bg-gray-50">
-                  <td className="px-6 py-4">{category.name}</td>
-                  <td className="px-6 py-4">
-                    <button
-                      onClick={() => handleEditCategory(category.id)}
-                      className="text-indigo-600 hover:text-indigo-700"
-                    >
-                      <Edit size={20} />
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="2" className="text-center text-gray-500 py-4">
-                  Tidak ada kategori ditemukan.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      {/* For mobile screens, display categories in card format */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {currentCategories.length > 0 ? (
+          currentCategories.map((category) => (
+            <div
+              key={category.id}
+              className="p-4 border rounded-lg shadow-sm bg-white hover:bg-gray-50"
+            >
+              <div className="flex justify-between items-center">
+                <span className="text-lg font-semibold">{category.name}</span>
+                <button
+                  onClick={() => handleEditCategory(category.id)}
+                  className="text-indigo-600 hover:text-indigo-700"
+                >
+                  <Edit size={20} />
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center text-gray-500 py-4 col-span-full">
+            Tidak ada kategori ditemukan.
+          </div>
+        )}
       </div>
 
-      <div className="flex justify-center mt-6">
+      {/* Pagination */}
+      <div className="flex justify-center mt-6 gap-2">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1}
@@ -262,7 +257,7 @@ const CategoriesManagement = () => {
             type="text"
             value={editedCategoryName}
             onChange={(e) => setEditedCategoryName(e.target.value)}
-            className="px-4 py-2 border rounded-md w-1/2 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            className="px-4 py-2 border rounded-md w-full sm:w-1/2 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <button
             onClick={handleUpdateCategory}
