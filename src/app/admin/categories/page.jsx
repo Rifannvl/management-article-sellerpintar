@@ -4,6 +4,26 @@ import React, { useState, useEffect } from "react";
 import { Search, Edit } from "lucide-react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
+import axios from "axios"; // Import axios
+
+export const api = axios.create({
+  baseURL: "https://test-fe.mysellerpintar.com/api",
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
+
+api.interceptors.request.use((config) => {
+  if (typeof window !== "undefined") {
+    const token = localStorage.getItem("token");
+    console.log("Token dari interceptor:", token);
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
 
 const CategoriesManagement = () => {
   const router = useRouter();
@@ -20,10 +40,8 @@ const CategoriesManagement = () => {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch(
-        "https://test-fe.mysellerpintar.com/api/categories?page=1&limit=100"
-      );
-      const result = await res.json();
+      const res = await api.get("/categories?page=1&limit=100");
+      const result = res.data;
 
       if (Array.isArray(result.data)) {
         const validData = result.data.filter((cat) => cat?.id && cat?.name);
@@ -64,25 +82,11 @@ const CategoriesManagement = () => {
         return;
       }
 
-      const res = await fetch(
-        "https://test-fe.mysellerpintar.com/api/categories",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ name: newCategory }),
-        }
-      );
+      const res = await api.post("/categories", {
+        name: newCategory,
+      });
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Error Response:", errorText);
-        throw new Error("Gagal menambahkan kategori");
-      }
-
-      const data = await res.json();
+      const data = res.data;
 
       if (data?.id && data?.name) {
         alert("Kategori berhasil ditambahkan!");
@@ -116,17 +120,9 @@ const CategoriesManagement = () => {
         return;
       }
 
-      const res = await fetch(
-        `https://test-fe.mysellerpintar.com/api/categories/${editingCategory.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ name: editedCategoryName }),
-        }
-      );
+      const res = await api.put(`/categories/${editingCategory.id}`, {
+        name: editedCategoryName,
+      });
 
       if (res.status === 200) {
         alert("Kategori berhasil diperbarui!");
