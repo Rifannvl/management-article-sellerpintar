@@ -15,6 +15,44 @@ import {
 import CategoriesManagement from "../../categories/page";
 import { api } from "@/lib/api";
 
+// Skeleton loader component for table
+const SkeletonLoader = () => {
+  return (
+    <div className="overflow-x-auto shadow-md rounded-lg bg-white">
+      <table className="min-w-full table-auto">
+        <thead>
+          <tr className="border-b bg-indigo-100">
+            <th className="p-4 text-left text-sm font-semibold text-gray-600">
+              <div className="w-24 h-4 bg-gray-200 animate-pulse"></div>
+            </th>
+            <th className="p-4 text-left text-sm font-semibold text-gray-600">
+              <div className="w-16 h-4 bg-gray-200 animate-pulse"></div>
+            </th>
+            <th className="p-4 text-left text-sm font-semibold text-gray-600">
+              <div className="w-20 h-4 bg-gray-200 animate-pulse"></div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {[...Array(5)].map((_, index) => (
+            <tr key={index} className="border-b hover:bg-indigo-50">
+              <td className="p-4 text-sm text-gray-800">
+                <div className="w-32 h-4 bg-gray-200 animate-pulse"></div>
+              </td>
+              <td className="p-4 text-sm text-gray-500">
+                <div className="w-16 h-4 bg-gray-200 animate-pulse"></div>
+              </td>
+              <td className="p-4 text-sm text-gray-500">
+                <div className="w-20 h-4 bg-gray-200 animate-pulse"></div>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 export default function Page() {
   const router = useRouter();
   const [allArticles, setAllArticles] = useState([]);
@@ -205,7 +243,7 @@ export default function Page() {
             />
 
             {loading ? (
-              <div className="text-center text-gray-500">Memuat artikel...</div>
+              <SkeletonLoader />
             ) : filteredArticles.length === 0 ? (
               <div className="text-center text-gray-500">
                 Tidak ada artikel ditemukan.
