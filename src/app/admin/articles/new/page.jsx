@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { api } from "@/lib/api";
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 export default function CreateArticle() {
   const router = useRouter();
@@ -78,11 +79,22 @@ export default function CreateArticle() {
         }
       );
 
-      alert("Artikel berhasil dibuat!");
-      router.push("/admin/articles/dashboard");
+      Swal.fire({
+        title: "Sukses!",
+        text: "Artikel berhasil dibuat.",
+        icon: "success",
+        confirmButtonText: "OK",
+      }).then(() => {
+        router.push("/admin/articles/dashboard");
+      });
     } catch (err) {
       console.error("Gagal submit artikel:", err);
-      alert("Gagal submit artikel.");
+      Swal.fire({
+        title: "Gagal!",
+        text: "Terjadi kesalahan saat mengirim artikel.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 
