@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema } from "@/lib/validationSchemas"; // Ensure the schema is correct
+import { loginSchema } from "@/lib/validationSchemas";
 import { api } from "@/lib/api";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
@@ -22,35 +22,34 @@ export default function LoginPage() {
   const router = useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
 
-  // Function to handle login success
   const handleLoginSuccess = (user) => {
-    // Set token and role in cookies
     Cookies.set("token", user.token, { expires: 7 });
     Cookies.set("role", user.role, { expires: 7 });
+    localStorage.setItem("token", user.token); // ✅ tambahkan ini
 
-    // Redirect user based on their role
     if (user.role === "Admin") {
-      window.location.href = "/admin/articles/dashboard"; // Redirect to the admin dashboard
+      window.location.href = "/admin/articles/dashboard";
     } else {
-      window.location.href = "/articles"; // Redirect to the articles page
+      window.location.href = "/articles";
     }
   };
 
-  // Form submission logic
   const onSubmit = async (data) => {
     try {
       const res = await api.post("/auth/login", data);
-      const token = res.data?.token || res.data?.data?.token;
-      const role = res.data?.role || res.data?.data?.role;
+      console.log("FULL RESPONSE:", res.data);
+
+      // Coba lihat kunci token yang benar
+      const token =
+        res.data.token || res.data.data?.access_token || res.data.access_token;
+      const role = res.data.role || res.data.data?.role;
 
       if (!token || !role) {
         throw new Error("Login failed: token or role not found");
       }
 
-      // Call the handleLoginSuccess function after successful login
       handleLoginSuccess({ token, role });
 
-      // Show success message
       Swal.fire({
         icon: "success",
         title: "Login Berhasil!",
@@ -70,13 +69,11 @@ export default function LoginPage() {
     }
   };
 
-  // Check if user is already logged in
   useEffect(() => {
     const token = Cookies.get("token");
     const role = Cookies.get("role");
 
     if (token && role) {
-      // If logged in, redirect based on role
       if (role === "Admin") {
         router.replace("/admin/articles");
       } else {
@@ -86,7 +83,7 @@ export default function LoginPage() {
   }, [router]);
 
   return (
-    <div className="max-w-md mx-auto mt-50 p-6 border rounded-xl shadow-lg bg-white  ">
+    <div className="max-w-md mx-auto mt-50 p-6 border rounded-xl shadow-lg bg-white">
       <h1 className="text-3xl font-semibold mb-6 text-center text-gray-800">
         Login
       </h1>
