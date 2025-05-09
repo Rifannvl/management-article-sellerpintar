@@ -5,6 +5,7 @@ import { Search, Edit } from "lucide-react";
 import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import axios from "axios"; // Import axios
+import Swal from "sweetalert2"; // Import SweetAlert2
 
 export const api = axios.create({
   baseURL: "https://test-fe.mysellerpintar.com/api",
@@ -89,15 +90,31 @@ const CategoriesManagement = () => {
       const data = res.data;
 
       if (data?.id && data?.name) {
-        alert("Kategori berhasil ditambahkan!");
-        setCategories((prev) => [...prev, data]);
-        setNewCategory(""); // Clear input field
+        Swal.fire({
+          title: "Sukses!",
+          text: "Kategori berhasil ditambahkan.",
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then(() => {
+          setCategories((prev) => [...prev, data]);
+          setNewCategory(""); // Clear input field
+        });
       } else {
-        alert("Gagal menambahkan kategori.");
+        Swal.fire({
+          title: "Gagal!",
+          text: "Gagal menambahkan kategori.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
       }
     } catch (error) {
       console.error("Error saat menambah kategori:", error);
-      alert("Gagal menambahkan kategori.");
+      Swal.fire({
+        title: "Gagal!",
+        text: "Gagal menambahkan kategori.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 
@@ -110,7 +127,8 @@ const CategoriesManagement = () => {
   };
 
   const handleUpdateCategory = async () => {
-    if (!editedCategoryName.trim()) return alert("Nama tidak boleh kosong");
+    if (!editedCategoryName.trim())
+      return Swal.fire("Perhatian!", "Nama tidak boleh kosong", "warning");
 
     try {
       const token = localStorage.getItem("token") || Cookies.get("token");
@@ -125,15 +143,31 @@ const CategoriesManagement = () => {
       });
 
       if (res.status === 200) {
-        alert("Kategori berhasil diperbarui!");
-        setEditingCategory(null);
-        fetchCategories();
+        Swal.fire({
+          title: "Sukses!",
+          text: "Kategori berhasil diperbarui!",
+          icon: "success",
+          confirmButtonText: "OK",
+        }).then(() => {
+          setEditingCategory(null);
+          fetchCategories();
+        });
       } else {
-        alert("Gagal memperbarui kategori.");
+        Swal.fire({
+          title: "Gagal!",
+          text: "Gagal memperbarui kategori.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
       }
     } catch (error) {
       console.error("Update error:", error);
-      alert("Gagal memperbarui kategori.");
+      Swal.fire({
+        title: "Gagal!",
+        text: "Gagal memperbarui kategori.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
   };
 
