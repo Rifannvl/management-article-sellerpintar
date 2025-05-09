@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { api } from "@/lib/api";
 
 export default function CreateArticle() {
   const router = useRouter();
@@ -11,18 +12,11 @@ export default function CreateArticle() {
   const [preview, setPreview] = useState(null);
   const [error, setError] = useState("");
 
-  // Fetch categories from API
+  // Fetch categories using Axios
   const fetchCategories = async () => {
     try {
-      const res = await fetch(
-        "https://test-fe.mysellerpintar.com/api/categories?page=1&limit=100"
-      );
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! Status: ${res.status}`);
-      }
-
-      const data = await res.json();
+      const response = await api.get("/categories?page=1&limit=100");
+      const data = response.data;
 
       if (Array.isArray(data)) {
         setCategories(data);
@@ -38,12 +32,10 @@ export default function CreateArticle() {
     }
   };
 
-  // Initial fetch categories when the component loads
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // Handle input changes
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
     setError("");
@@ -57,7 +49,6 @@ export default function CreateArticle() {
     setPreview(form);
   };
 
-  // Handle form submission
   const handleSubmit = async () => {
     if (!form.title.trim() || !form.content.trim() || !form.categoryId) {
       setError("Semua field wajib diisi.");
@@ -65,7 +56,7 @@ export default function CreateArticle() {
     }
 
     try {
-      const token = localStorage.getItem("token") || Cookies.get("token");
+      const token = Cookies.get("token") || localStorage.getItem("token");
 
       if (!token) {
         setError("Token tidak ditemukan, silakan login.");
@@ -73,33 +64,25 @@ export default function CreateArticle() {
         return;
       }
 
-      const res = await fetch(
-        "https://test-fe.mysellerpintar.com/api/articles",
+      await api.post(
+        "/articles",
         {
-          method: "POST",
+          title: form.title,
+          content: form.content,
+          categoryId: form.categoryId,
+        },
+        {
           headers: {
-            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify({
-            title: form.title,
-            content: form.content,
-            categoryId: form.categoryId,
-          }),
         }
       );
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("Error Response:", errorText);
-        throw new Error("Gagal membuat artikel");
-      }
 
       alert("Artikel berhasil dibuat!");
       router.push("/admin/articles/dashboard");
     } catch (err) {
+      console.error("Gagal submit artikel:", err);
       alert("Gagal submit artikel.");
-      console.error(err);
     }
   };
 
