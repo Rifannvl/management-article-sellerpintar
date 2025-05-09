@@ -13,6 +13,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import CategoriesManagement from "../../categories/page";
+import { api } from "@/lib/api";
 
 export default function Page() {
   const router = useRouter();
@@ -28,24 +29,9 @@ export default function Page() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const fetchCategories = async () => {
-    const token = Cookies.get("token") || localStorage.getItem("token");
-    if (!token) {
-      alert("Anda harus login terlebih dahulu.");
-      router.push("/auth/login");
-      return;
-    }
-
     try {
-      const res = await fetch(
-        "https://test-fe.mysellerpintar.com/api/categories",
-        {
-          headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await res.json();
+      const res = await api.get("/categories");
+      const data = res.data;
       if (data?.data) {
         setCategories(data.data);
       } else {
@@ -53,35 +39,28 @@ export default function Page() {
       }
     } catch (error) {
       console.error("Gagal mengambil kategori:", error);
+      if (error.response?.status === 401) {
+        alert("Sesi Anda telah habis. Silakan login kembali.");
+        router.push("/auth/login");
+      }
     }
   };
 
   const fetchArticles = async () => {
     setLoading(true);
-    const token = Cookies.get("token") || localStorage.getItem("token");
-    if (!token) {
-      alert("Anda harus login terlebih dahulu.");
-      router.push("/auth/login");
-      return;
-    }
-
     try {
-      const res = await fetch(
-        "https://test-fe.mysellerpintar.com/api/articles?page=1&limit=30",
-        {
-          headers: {
-            accept: "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const data = await res.json();
+      const res = await api.get("/articles?page=1&limit=30");
+      const data = res.data;
       if (data?.data) {
         setAllArticles(data.data || []);
         setFilteredArticles(data.data || []);
       }
     } catch (error) {
       console.error("Gagal mengambil artikel:", error);
+      if (error.response?.status === 401) {
+        alert("Sesi Anda telah habis. Silakan login kembali.");
+        router.push("/auth/login");
+      }
       setAllArticles([]);
       setFilteredArticles([]);
     } finally {
