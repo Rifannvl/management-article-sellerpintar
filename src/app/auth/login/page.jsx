@@ -86,7 +86,7 @@ export default function LoginPage() {
   }, [router]);
 
   return (
-    <div className="max-w-md mx-auto mt-16 p-6 border rounded-xl shadow-lg bg-white">
+    <div className="max-w-md mx-auto mt-50 p-6 border rounded-xl shadow-lg bg-white  ">
       <h1 className="text-3xl font-semibold mb-6 text-center text-gray-800">
         Login
       </h1>
@@ -102,7 +102,7 @@ export default function LoginPage() {
           )}
         </div>
 
-        <div className="relative">
+        <div className="relative mt-3 pb-6">
           <input
             {...register("password")}
             type={passwordVisible ? "text" : "password"}
@@ -111,7 +111,7 @@ export default function LoginPage() {
           />
           <button
             type="button"
-            className="absolute right-3 top-1/2 transform -translate-y-1/2"
+            className="absolute right-3 top-1 transform -translate-y-0.5 mt-4"
             onClick={() => setPasswordVisible(!passwordVisible)}
           >
             {passwordVisible ? (
@@ -121,13 +121,13 @@ export default function LoginPage() {
             )}
           </button>
           {errors.password && (
-            <p className="text-red-500 mt-2">{errors.password.message}</p>
+            <p className="text-red-500 mt-4">{errors.password.message}</p>
           )}
         </div>
 
         <button
           type="submit"
-          className="w-full p-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
+          className="w-full p-3 mb-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition"
         >
           Login
         </button>
